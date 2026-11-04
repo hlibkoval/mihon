@@ -854,6 +854,9 @@ open class WebGpuViewer(
             if (old?.doubleTapGesturesDisabled != new.doubleTapGesturesDisabled) {
                 viewerState.doubleTapGesturesEnabled = !new.doubleTapGesturesDisabled
             }
+            if (old?.showTilesAtOnce != new.showTilesAtOnce) {
+                viewerState.progressiveTiles = !new.showTilesAtOnce
+            }
             if (old?.imageFilters != new.imageFilters) imageFilters.update(new.imageFilters)
             if (old?.tileFilters != new.tileFilters) tileFilters.update(new.tileFilters)
         }
