@@ -96,6 +96,9 @@ class ReaderPreferences(
 
     val landscapeZoom: Preference<Boolean> = preferenceStore.getBoolean("landscape_zoom", true)
 
+    /** Scales pages like the high quality renderer in the other viewers, at a higher cost per frame. */
+    val highQualityScaling: Preference<Boolean> = preferenceStore.getBoolean("high_quality_scaling", false)
+
     val cropBordersWebtoon: Preference<Boolean> = preferenceStore.getBoolean("crop_borders_webtoon", false)
 
     val webtoonSidePadding: Preference<Int> = preferenceStore.getInt("webtoon_side_padding", WEBTOON_PADDING_MIN)

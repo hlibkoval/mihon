@@ -167,6 +167,7 @@ class PagerPageHolder(
                         cropBorders = viewer.paged.page.cropBorders,
                         zoomStartPosition = viewer.imageZoomType,
                         landscapeZoom = viewer.paged.page.landscapeZoom,
+                        highQualityScaling = viewer.general.highQualityScaling,
                     ),
                 )
                 if (!isAnimated) {
