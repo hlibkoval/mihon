@@ -37,6 +37,7 @@ import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.model.ViewerChapters
 import eu.kanade.tachiyomi.ui.reader.setting.GeneralSettings
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
+import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences.TileUpdateMode
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences.TransitionAnimation
 import eu.kanade.tachiyomi.ui.reader.viewer.LongStripSettings
 import eu.kanade.tachiyomi.ui.reader.viewer.PagedSettings
@@ -130,6 +131,10 @@ open class WebGpuViewer(
     private var destroyed = false
 
     private val pageCache = LinkedHashMap<PageKey, ViewerPage>()
+
+    /** False skips the tile cache on every still page, so its first render is its last. */
+    @Volatile
+    private var qualityPass = true
 
     // Processed LIFO - last added is highest priority.
     private val decodeQueue = ArrayDeque<ViewerReaderPage>()
@@ -589,6 +594,9 @@ open class WebGpuViewer(
         /** So a download streams once; weak, as it holds the whole download. Under [lock]. */
         internal var streamedFrom: WeakReference<DownloadStream>? = null
 
+        /** Never tiled, whatever [qualityPass] says. Under [lock]. */
+        internal var animated = false
+
         /** A streaming decode owns the page. Under [lock]. */
         internal var streaming = false
 
@@ -851,8 +859,11 @@ open class WebGpuViewer(
             if (old?.doubleTapGesturesDisabled != new.doubleTapGesturesDisabled) {
                 viewerState.doubleTapGesturesEnabled = !new.doubleTapGesturesDisabled
             }
-            if (old?.showTilesAtOnce != new.showTilesAtOnce) {
-                viewerState.progressiveTiles = !new.showTilesAtOnce
+            if (old?.tileUpdateMode != new.tileUpdateMode) {
+                viewerState.progressiveTiles = new.tileUpdateMode == TileUpdateMode.DEFAULT
+                viewerState.singleRender = new.tileUpdateMode == TileUpdateMode.SINGLE_RENDER
+                qualityPass = new.tileUpdateMode != TileUpdateMode.NO_QUALITY_PASS
+                applyQualityPass()
             }
             if (old?.imageFilters != new.imageFilters) {
                 // Else an older, slower load could land last.
@@ -1453,8 +1464,9 @@ open class WebGpuViewer(
                     // something replaced it meanwhile.
                     shown != null -> shown.takeIf { page.imagePage === it && !it.destroyed }?.also {
                         page.preview = null
+                        page.animated = animated
                         // Tiles for a still; an animation swaps images every frame.
-                        it.highQuality = !animated
+                        it.highQuality = !animated && qualityPass
                         if (wasHome && firstImage.trim != null && !isDualPageMode()) rehome(it)
                         // Bumps frameVersion, so a transition's cached render of the preview is stale.
                         it.invalidate()
@@ -1463,6 +1475,8 @@ open class WebGpuViewer(
                     // A new page in the placeholder's place.
                     !page.isDecoded && !page.imagePage.destroyed -> {
                         val imagePage = ImagePage.ImageSingle(firstImage)
+                        page.animated = animated
+                        if (!qualityPass) imagePage.highQuality = false
                         orphan = null
                         val old = page.imagePage
                         // A failed stream's preview is already showing.
@@ -1521,6 +1535,17 @@ open class WebGpuViewer(
             secondFrame?.close()
             // Nothing took it, normally or not. A preview's image belongs to its page either way.
             orphan?.let { ImagePage.ImageSingle(it).cleanup() }
+        }
+    }
+
+    /** Pages made before [qualityPass] changed. Previews, chrome and animations are never tiled. */
+    private fun applyQualityPass() = synchronized(lock) {
+        pageCache.values.filterIsInstance<ViewerReaderPage>().forEach { page ->
+            val image = page.imagePage as? ImagePage.ImageSingle ?: return@forEach
+            if (page.animated || image === page.preview || image is ImagePage.Compose) return@forEach
+            image.highQuality = qualityPass
+            page.spreadPage?.highQuality = qualityPass
+            image.invalidate()
         }
     }
 

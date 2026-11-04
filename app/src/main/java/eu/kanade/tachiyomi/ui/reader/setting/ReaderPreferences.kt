@@ -225,8 +225,9 @@ class ReaderPreferences(
     val disableDoubleTapGestures: Preference<Boolean> =
         preferenceStore.getBoolean("webgpu_disable_double_tap_gestures", false)
 
-    /** Show high-quality tiles only once a whole screen of them is ready, for e-ink displays. */
-    val showTilesAtOnce: Preference<Boolean> = preferenceStore.getBoolean("webgpu_show_tiles_at_once", false)
+    /** How the high quality renderer reaches the screen, as every frame is a refresh on e-ink displays. */
+    val tileUpdateMode: Preference<TileUpdateMode> =
+        preferenceStore.getEnum("webgpu_tile_update_mode", TileUpdateMode.DEFAULT)
 
     /** In run order. */
     val imageFilters: Preference<List<WebGpuShader>> = preferenceStore.getObjectFromString(
@@ -338,6 +339,20 @@ class ReaderPreferences(
         HIGH(13),
         LOW(31),
         LOWEST(47),
+    }
+
+    enum class TileUpdateMode(val titleRes: StringResource) {
+        /** Tiles sharpen the page progressively, a frame per batch. */
+        DEFAULT(MR.strings.tile_update_mode_default),
+
+        /** Tiles replace the page in one frame, once a screen of them is ready. */
+        SINGLE_UPDATE(MR.strings.tile_update_mode_single_update),
+
+        /** The old page stays up until the new one's tiles are done: its first frame is its last. */
+        SINGLE_RENDER(MR.strings.tile_update_mode_single_render),
+
+        /** No tiles at all: the first render is the last. */
+        NO_QUALITY_PASS(MR.strings.tile_update_mode_no_quality_pass),
     }
 
     enum class TransitionAnimation(val titleRes: StringResource) {

@@ -546,8 +546,11 @@
     <string name="pref_image_filters">Image filters</string>
     <string name="pref_tile_filters">Tile filters</string>
     <string name="pref_disable_double_tap_gestures">Disable double tap gestures</string>
-    <string name="pref_show_tiles_at_once">Prevent e-ink ripple</string>
-    <string name="pref_show_tiles_at_once_summ">High quality renderer only. Avoids a refresh per sharpened area after page turns</string>
+    <string name="pref_tile_update_mode">High quality renderer updates</string>
+    <string name="tile_update_mode_default">Default</string>
+    <string name="tile_update_mode_single_update">Single update</string>
+    <string name="tile_update_mode_single_render">Single render</string>
+    <string name="tile_update_mode_no_quality_pass">No quality pass</string>
     <string name="action_add_shader">Add shader</string>
     <string name="image_filter_invalid">Couldn\'t add shader</string>
 

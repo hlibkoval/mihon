@@ -208,7 +208,7 @@ class ReaderSettingsViewModel(
         preferences.cutoutMode,
         preferences.cutoutModeDual,
         preferences.disableDoubleTapGestures,
-        preferences.showTilesAtOnce,
+        preferences.tileUpdateMode,
         preferences.imageFilters,
         preferences.tileFilters,
     ) {
@@ -222,7 +222,7 @@ class ReaderSettingsViewModel(
             ),
             common = WebGpuSettings(
                 doubleTapGesturesDisabled = disableDoubleTapGestures.get(),
-                showTilesAtOnce = showTilesAtOnce.get(),
+                tileUpdateMode = tileUpdateMode.get(),
                 imageFilters = imageFilters.get(),
                 tileFilters = tileFilters.get(),
             ),
@@ -236,7 +236,7 @@ class ReaderSettingsViewModel(
         preferences.continuousMinWidth,
         preferences.continuousGap,
         preferences.disableDoubleTapGestures,
-        preferences.showTilesAtOnce,
+        preferences.tileUpdateMode,
         preferences.imageFilters,
         preferences.tileFilters,
     ) {
@@ -247,7 +247,7 @@ class ReaderSettingsViewModel(
             ),
             common = WebGpuSettings(
                 doubleTapGesturesDisabled = disableDoubleTapGestures.get(),
-                showTilesAtOnce = showTilesAtOnce.get(),
+                tileUpdateMode = tileUpdateMode.get(),
                 imageFilters = imageFilters.get(),
                 tileFilters = tileFilters.get(),
             ),

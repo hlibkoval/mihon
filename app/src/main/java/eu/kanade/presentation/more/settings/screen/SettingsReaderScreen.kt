@@ -126,10 +126,10 @@ object SettingsReaderScreen : SearchableSettings {
         return Preference.PreferenceGroup(
             title = "E-Ink",
             preferenceItems = listOf(
-                Preference.PreferenceItem.SwitchPreference(
-                    preference = readerPreferences.showTilesAtOnce,
-                    title = stringResource(MR.strings.pref_show_tiles_at_once),
-                    subtitle = stringResource(MR.strings.pref_show_tiles_at_once_summ),
+                Preference.PreferenceItem.ListPreference(
+                    preference = readerPreferences.tileUpdateMode,
+                    entries = ReaderPreferences.TileUpdateMode.entries.associateWith { stringResource(it.titleRes) },
+                    title = stringResource(MR.strings.pref_tile_update_mode),
                 ),
                 Preference.PreferenceItem.SwitchPreference(
                     preference = readerPreferences.flashOnPageChange,
