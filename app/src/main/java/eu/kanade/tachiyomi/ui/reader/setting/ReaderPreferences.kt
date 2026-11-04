@@ -227,6 +227,9 @@ class ReaderPreferences(
     val disableDoubleTapGestures: Preference<Boolean> =
         preferenceStore.getBoolean("webgpu_disable_double_tap_gestures", false)
 
+    /** Show high-quality tiles only once a whole screen of them is ready, for e-ink displays. */
+    val showTilesAtOnce: Preference<Boolean> = preferenceStore.getBoolean("webgpu_show_tiles_at_once", false)
+
     /** In run order. */
     val imageFilters: Preference<List<WebGpuShader>> = preferenceStore.getObjectFromString(
         "webgpu_image_filters",

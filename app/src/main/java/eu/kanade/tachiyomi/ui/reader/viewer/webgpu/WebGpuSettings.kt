@@ -5,6 +5,7 @@ package eu.kanade.tachiyomi.ui.reader.viewer.webgpu
  */
 data class WebGpuSettings(
     val doubleTapGesturesDisabled: Boolean,
+    val showTilesAtOnce: Boolean,
     val imageFilters: List<WebGpuShader>,
     val tileFilters: List<WebGpuShader>,
 )
