@@ -851,6 +851,9 @@ open class WebGpuViewer(
             if (old?.doubleTapGesturesDisabled != new.doubleTapGesturesDisabled) {
                 viewerState.doubleTapGesturesEnabled = !new.doubleTapGesturesDisabled
             }
+            if (old?.showTilesAtOnce != new.showTilesAtOnce) {
+                viewerState.progressiveTiles = !new.showTilesAtOnce
+            }
             if (old?.imageFilters != new.imageFilters) {
                 // Else an older, slower load could land last.
                 imageFiltersJob?.cancel()
