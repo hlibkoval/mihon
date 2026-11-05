@@ -10,7 +10,6 @@ import android.graphics.Color
 import android.graphics.Matrix
 import android.graphics.Rect
 import android.graphics.drawable.Drawable
-import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import androidx.annotation.ColorInt
 import androidx.core.graphics.alpha
@@ -31,8 +30,12 @@ import java.util.Locale
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.roundToInt
 
 object ImageUtil {
+
+    /** Period of the halftone dots in the automatic background. */
+    private const val HALFTONE_DOT_PITCH_DP = 3f
 
     fun isImage(name: String?, openStream: (() -> InputStream)? = null): Boolean {
         if (name == null) return false
@@ -385,12 +388,12 @@ object ImageUtil {
         val topOffsetCornersIsDark = image[leftOffsetX, top].isDark() && image[rightOffsetX, top].isDark()
         val botOffsetCornersIsDark = image[leftOffsetX, bot].isDark() && image[rightOffsetX, bot].isDark()
 
-        val gradient = when {
+        val (startColor, endColor) = when {
             darkBG && botCornersIsWhite -> {
-                intArrayOf(blackColor, blackColor, whiteColor, whiteColor)
+                blackColor to whiteColor
             }
             darkBG && topCornersIsWhite -> {
-                intArrayOf(whiteColor, whiteColor, blackColor, blackColor)
+                whiteColor to blackColor
             }
             darkBG -> {
                 return blackColor.toDrawable()
@@ -401,7 +404,7 @@ object ImageUtil {
                         topOffsetCornersIsDark &&
                         (topMidIsDark || overallBlackPixels > 9)
                     ) -> {
-                intArrayOf(blackColor, blackColor, whiteColor, whiteColor)
+                blackColor to whiteColor
             }
             bottomIsBlackStreak ||
                 (
@@ -409,16 +412,17 @@ object ImageUtil {
                         botOffsetCornersIsDark &&
                         (bottomCenterPixel.isDark() || overallBlackPixels > 9)
                     ) -> {
-                intArrayOf(whiteColor, whiteColor, blackColor, blackColor)
+                whiteColor to blackColor
             }
             else -> {
                 return whiteColor.toDrawable()
             }
         }
 
-        return GradientDrawable(
-            GradientDrawable.Orientation.TOP_BOTTOM,
-            gradient,
+        return HalftoneGradientDrawable(
+            startColor = startColor,
+            endColor = endColor,
+            dotPitch = (HALFTONE_DOT_PITCH_DP * context.resources.displayMetrics.density).roundToInt(),
         )
     }
 
