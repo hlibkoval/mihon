@@ -10,6 +10,7 @@ import android.graphics.Color
 import android.graphics.Matrix
 import android.graphics.Rect
 import android.graphics.drawable.Drawable
+import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import androidx.annotation.ColorInt
 import androidx.core.graphics.alpha
@@ -191,7 +192,10 @@ object ImageUtil {
     /**
      * Algorithm for determining what background to accompany a comic/manga page
      */
-    fun chooseBackground(context: Context, imageStream: InputStream): Drawable {
+    /**
+     * @param halftone draw transitions as halftone dots instead of a gradient, which bands on e-ink.
+     */
+    fun chooseBackground(context: Context, imageStream: InputStream, halftone: Boolean = false): Drawable {
         val image = try {
             ImageDecoder.open(imageStream).use { it.decodeNext() to it.isHdr }.let { (res, hdr) ->
                 res.use {
@@ -209,13 +213,13 @@ object ImageUtil {
 
         if (image == null) return Color.WHITE.toDrawable()
         return try {
-            chooseBackground(context, image)
+            chooseBackground(context, image, halftone)
         } finally {
             image.recycle()
         }
     }
 
-    private fun chooseBackground(context: Context, image: Bitmap): Drawable {
+    private fun chooseBackground(context: Context, image: Bitmap, halftone: Boolean): Drawable {
         val whiteColor = Color.WHITE
         if (image.width < 50 || image.height < 50) {
             return whiteColor.toDrawable()
@@ -419,6 +423,12 @@ object ImageUtil {
             }
         }
 
+        if (!halftone) {
+            return GradientDrawable(
+                GradientDrawable.Orientation.TOP_BOTTOM,
+                intArrayOf(startColor, startColor, endColor, endColor),
+            )
+        }
         return HalftoneGradientDrawable(
             startColor = startColor,
             endColor = endColor,

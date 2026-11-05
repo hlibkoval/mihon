@@ -156,6 +156,11 @@ object SettingsReaderScreen : SearchableSettings {
                     title = stringResource(MR.strings.pref_flash_with),
                     visible = flashPageState,
                 ),
+                Preference.PreferenceItem.SwitchPreference(
+                    preference = readerPreferences.halftoneBackground,
+                    title = stringResource(MR.strings.pref_halftone_background),
+                    subtitle = stringResource(MR.strings.pref_halftone_background_summ),
+                ),
             ),
         )
     }
