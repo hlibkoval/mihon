@@ -80,6 +80,7 @@ class ReaderSettingsViewModel(
         preferences.readWithVolumeKeysInverted,
         preferences.alwaysShowChapterTransition,
         preferences.showNavigationOverlayOnStart,
+        preferences.halftoneBackground,
     ) {
         GeneralSettings(
             theme = ReaderPreferences.ReaderTheme.fromValue(readerTheme.get()),
@@ -95,6 +96,7 @@ class ReaderSettingsViewModel(
             volumeKeysInverted = readWithVolumeKeysInverted.get(),
             alwaysShowChapterTransition = alwaysShowChapterTransition.get(),
             navigationOverlayOnStart = showNavigationOverlayOnStart.get(),
+            halftoneBackground = halftoneBackground.get(),
         )
     }
 
