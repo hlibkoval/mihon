@@ -191,8 +191,7 @@ object ImageUtil {
 
     /**
      * Algorithm for determining what background to accompany a comic/manga page
-     */
-    /**
+     *
      * @param halftone draw transitions as halftone dots instead of a gradient, which bands on e-ink.
      */
     fun chooseBackground(context: Context, imageStream: InputStream, halftone: Boolean = false): Drawable {
