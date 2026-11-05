@@ -120,6 +120,7 @@ object SettingsReaderScreen : SearchableSettings {
     @Composable
     private fun getEInkGroup(readerPreferences: ReaderPreferences): Preference.PreferenceGroup {
         val flashPageState by readerPreferences.flashOnPageChange.collectAsState()
+        val readerTheme by readerPreferences.readerTheme.collectAsState()
 
         val flashColorPref = readerPreferences.flashColor
 
@@ -160,6 +161,7 @@ object SettingsReaderScreen : SearchableSettings {
                     preference = readerPreferences.halftoneBackground,
                     title = stringResource(MR.strings.pref_halftone_background),
                     subtitle = stringResource(MR.strings.pref_halftone_background_summ),
+                    visible = readerTheme == ReaderPreferences.ReaderTheme.AUTOMATIC.value,
                 ),
             ),
         )
