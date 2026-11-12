@@ -419,6 +419,10 @@
     <string name="pref_flash_style_black">Black</string>
     <string name="pref_flash_style_white">White</string>
     <string name="pref_flash_style_white_black">White and Black</string>
+    <string name="pref_flash_hardware">Use %1$s refresh</string>
+    <string name="pref_flash_hardware_summary">Clears ghosting with the display\'s own full refresh instead of a flash</string>
+    <string name="pref_flash_hardware_twice">Refresh twice</string>
+    <string name="pref_flash_hardware_twice_summary">Clears the faint ghosting a single refresh can leave</string>
     <string name="pref_double_tap_anim_speed">Double tap animation speed</string>
     <string name="pref_show_page_number">Show page number</string>
     <string name="pref_vertical_navigator">Use vertical chapter navigator in</string>

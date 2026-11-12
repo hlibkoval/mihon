@@ -7,6 +7,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import eu.kanade.presentation.reader.refresh.DisplayRefresher
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderSettingsViewModel
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingMode
@@ -46,6 +47,10 @@ internal fun ColumnScope.GeneralPage(viewModel: ReaderSettingsViewModel) {
 
     val flashColorPref = viewModel.preferences.flashColor
     val flashColor by flashColorPref.collectAsState()
+
+    val hardwareRefresh by viewModel.preferences.hardwareRefresh.collectAsState()
+    val hardwareRefresher = DisplayRefresher.hardware
+    val hasHardwareRefresh = hardwareRefresher != null
 
     SettingsChipRow(MR.strings.pref_reader_theme) {
         themes.map { (labelRes, value) ->
@@ -136,7 +141,20 @@ internal fun ColumnScope.GeneralPage(viewModel: ReaderSettingsViewModel) {
         label = stringResource(MR.strings.pref_flash_page),
         pref = viewModel.preferences.flashOnPageChange,
     )
-    if (flashPageState) {
+    if (flashPageState && hasHardwareRefresh) {
+        CheckboxItem(
+            label = stringResource(MR.strings.pref_flash_hardware, hardwareRefresher?.name.orEmpty()),
+            pref = viewModel.preferences.hardwareRefresh,
+        )
+        if (hardwareRefresh) {
+            CheckboxItem(
+                label = stringResource(MR.strings.pref_flash_hardware_twice),
+                pref = viewModel.preferences.hardwareRefreshTwice,
+            )
+        }
+    }
+    val softwareFlash = !(hasHardwareRefresh && hardwareRefresh)
+    if (flashPageState && softwareFlash) {
         SliderItem(
             value = flashMillis / ReaderPreferences.MILLI_CONVERSION,
             valueRange = 1..15,
@@ -145,6 +163,8 @@ internal fun ColumnScope.GeneralPage(viewModel: ReaderSettingsViewModel) {
             onChange = { flashMillisPref.set(it * ReaderPreferences.MILLI_CONVERSION) },
             pillColor = MaterialTheme.colorScheme.surfaceContainerHighest,
         )
+    }
+    if (flashPageState) {
         SliderItem(
             value = flashInterval,
             valueRange = 1..10,
@@ -155,6 +175,8 @@ internal fun ColumnScope.GeneralPage(viewModel: ReaderSettingsViewModel) {
             },
             pillColor = MaterialTheme.colorScheme.surfaceContainerHighest,
         )
+    }
+    if (flashPageState && softwareFlash) {
         SettingsChipRow(MR.strings.pref_flash_with) {
             flashColors.map { (labelRes, value) ->
                 FilterChip(

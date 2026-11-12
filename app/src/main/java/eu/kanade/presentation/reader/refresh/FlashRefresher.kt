@@ -18,9 +18,11 @@ import kotlin.time.Duration.Companion.milliseconds
 @Stable
 class FlashRefresher(private val readerPreferences: ReaderPreferences) : DisplayRefresher {
 
+    override val name = "Flash"
+
     private var color by mutableStateOf<Color?>(null)
 
-    override suspend fun refresh(window: View) {
+    override suspend fun refresh(window: View): Boolean {
         val half = readerPreferences.flashDurationMillis.get().milliseconds / 2
         val flashColor = readerPreferences.flashColor.get()
         try {
@@ -33,6 +35,7 @@ class FlashRefresher(private val readerPreferences: ReaderPreferences) : Display
         } finally {
             color = null
         }
+        return true
     }
 
     @Composable

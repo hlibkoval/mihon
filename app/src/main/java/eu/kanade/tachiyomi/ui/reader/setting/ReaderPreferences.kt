@@ -37,6 +37,14 @@ class ReaderPreferences(
 
     val flashColor: Preference<FlashColor> = preferenceStore.getEnum("pref_reader_flash_mode", FlashColor.BLACK)
 
+    /** Flash with the display's own full refresh where Mihon supports it, see DisplayRefresher. */
+    val hardwareRefresh: Preference<Boolean> = preferenceStore.getBoolean("pref_reader_flash_hardware", true)
+
+    val hardwareRefreshTwice: Preference<Boolean> = preferenceStore.getBoolean(
+        "pref_reader_flash_hardware_twice",
+        false,
+    )
+
     val doubleTapAnimSpeed: Preference<Int> = preferenceStore.getInt("pref_double_tap_anim_speed", 500)
 
     val showPageNumber: Preference<Boolean> = preferenceStore.getBoolean("pref_show_page_number_key", true)

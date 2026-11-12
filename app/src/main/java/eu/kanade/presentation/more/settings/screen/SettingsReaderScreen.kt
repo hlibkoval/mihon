@@ -7,6 +7,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import eu.kanade.presentation.more.settings.Preference
+import eu.kanade.presentation.reader.refresh.DisplayRefresher
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderOrientation
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingMode
@@ -120,6 +121,10 @@ object SettingsReaderScreen : SearchableSettings {
     @Composable
     private fun getEInkGroup(readerPreferences: ReaderPreferences): Preference.PreferenceGroup {
         val flashPageState by readerPreferences.flashOnPageChange.collectAsState()
+        val hardwareRefresh by readerPreferences.hardwareRefresh.collectAsState()
+        val hardwareRefresher = DisplayRefresher.hardware
+        val hasHardwareRefresh = hardwareRefresher != null
+        val softwareFlashState = flashPageState && !(hasHardwareRefresh && hardwareRefresh)
 
         val flashColorPref = readerPreferences.flashColor
 
@@ -131,12 +136,24 @@ object SettingsReaderScreen : SearchableSettings {
                     title = stringResource(MR.strings.pref_flash_page),
                     subtitle = stringResource(MR.strings.pref_flash_page_summ),
                 ),
+                Preference.PreferenceItem.SwitchPreference(
+                    preference = readerPreferences.hardwareRefresh,
+                    title = stringResource(MR.strings.pref_flash_hardware, hardwareRefresher?.name.orEmpty()),
+                    subtitle = stringResource(MR.strings.pref_flash_hardware_summary),
+                    visible = flashPageState && hasHardwareRefresh,
+                ),
+                Preference.PreferenceItem.SwitchPreference(
+                    preference = readerPreferences.hardwareRefreshTwice,
+                    title = stringResource(MR.strings.pref_flash_hardware_twice),
+                    subtitle = stringResource(MR.strings.pref_flash_hardware_twice_summary),
+                    visible = flashPageState && hasHardwareRefresh && hardwareRefresh,
+                ),
                 Preference.PreferenceItem.SliderPreference(
                     preference = readerPreferences.flashDurationMillis,
                     valueRange = ReaderPreferences.MILLI_CONVERSION.let { it..it * 15 step it },
                     title = stringResource(MR.strings.pref_flash_duration),
                     valueText = { stringResource(MR.strings.pref_flash_duration_summary, it) },
-                    visible = flashPageState,
+                    visible = softwareFlashState,
                 ),
                 Preference.PreferenceItem.SliderPreference(
                     preference = readerPreferences.flashPageInterval,
@@ -154,7 +171,7 @@ object SettingsReaderScreen : SearchableSettings {
                             to stringResource(MR.strings.pref_flash_style_white_black),
                     ),
                     title = stringResource(MR.strings.pref_flash_with),
-                    visible = flashPageState,
+                    visible = softwareFlashState,
                 ),
             ),
         )
