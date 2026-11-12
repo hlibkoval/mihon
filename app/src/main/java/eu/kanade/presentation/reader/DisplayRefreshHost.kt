@@ -84,4 +84,5 @@ fun DisplayRefreshHost(
 
 private val HARDWARE_REFRESH_DELAY = 500.milliseconds
 
-private val SECOND_PASS_DELAY = 250.milliseconds
+// Sent back to back, the two requests sometimes merge into one refresh
+private val SECOND_PASS_DELAY = 50.milliseconds
