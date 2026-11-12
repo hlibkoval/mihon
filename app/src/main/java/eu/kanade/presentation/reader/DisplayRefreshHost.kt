@@ -84,5 +84,4 @@ fun DisplayRefreshHost(
 
 private val HARDWARE_REFRESH_DELAY = 500.milliseconds
 
-// About one full refresh, so the passes don't overlap
-private val SECOND_PASS_DELAY = 500.milliseconds
+private val SECOND_PASS_DELAY = 250.milliseconds
