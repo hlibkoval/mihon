@@ -1,27 +1,22 @@
 package eu.kanade.presentation.reader
 
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalView
+import eu.kanade.presentation.reader.refresh.FlashRefresher
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.collectLatest
 import tachiyomi.presentation.core.util.collectAsState
-import kotlin.time.Duration.Companion.milliseconds
 
 @Stable
 class DisplayRefreshHost(readerPreferences: ReaderPreferences) {
 
-    internal var currentDisplayRefresh by mutableStateOf(false)
-    internal val flashMillis = readerPreferences.flashDurationMillis
-    internal val flashMode = readerPreferences.flashColor
+    internal val requests = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    internal val flashRefresher = FlashRefresher(readerPreferences)
 
     internal val flashIntervalPref = readerPreferences.flashPageInterval
 
@@ -31,7 +26,7 @@ class DisplayRefreshHost(readerPreferences: ReaderPreferences) {
 
     fun flash() {
         if (timesCalled % flashInterval == 0) {
-            currentDisplayRefresh = true
+            requests.tryEmit(Unit)
         }
         timesCalled += 1
     }
@@ -47,40 +42,19 @@ fun DisplayRefreshHost(
     hostState: DisplayRefreshHost,
     modifier: Modifier = Modifier,
 ) {
-    val currentDisplayRefresh = hostState.currentDisplayRefresh
-    val refreshDuration by hostState.flashMillis.collectAsState()
-    val flashMode by hostState.flashMode.collectAsState()
     val flashInterval by hostState.flashIntervalPref.collectAsState()
+    val view = LocalView.current
 
-    var currentColor by remember { mutableStateOf<Color?>(null) }
-
-    LaunchedEffect(currentDisplayRefresh) {
-        if (!currentDisplayRefresh) {
-            currentColor = null
-            return@LaunchedEffect
+    LaunchedEffect(hostState) {
+        // Latest, so turning pages quickly refreshes once, after the last one
+        hostState.requests.collectLatest {
+            hostState.flashRefresher.refresh(view.rootView)
         }
-
-        val refreshDurationHalf = refreshDuration.milliseconds / 2
-        currentColor = if (flashMode == ReaderPreferences.FlashColor.BLACK) {
-            Color.Black
-        } else {
-            Color.White
-        }
-        delay(refreshDurationHalf)
-        if (flashMode == ReaderPreferences.FlashColor.WHITE_BLACK) {
-            currentColor = Color.Black
-        }
-        delay(refreshDurationHalf)
-        hostState.currentDisplayRefresh = false
     }
 
     LaunchedEffect(flashInterval) {
         hostState.setInterval(flashInterval)
     }
 
-    Canvas(
-        modifier = modifier.fillMaxSize(),
-    ) {
-        currentColor?.let { drawRect(it) }
-    }
+    hostState.flashRefresher.Overlay(modifier)
 }
