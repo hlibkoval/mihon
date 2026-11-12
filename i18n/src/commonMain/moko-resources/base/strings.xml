@@ -419,6 +419,8 @@
     <string name="pref_flash_style_black">Black</string>
     <string name="pref_flash_style_white">White</string>
     <string name="pref_flash_style_white_black">White and Black</string>
+    <string name="pref_halftone_background">Halftone automatic background</string>
+    <string name="pref_halftone_background_summ">Draws the automatic background\'s fade as dots, which avoids banding on e-ink displays</string>
     <string name="pref_double_tap_anim_speed">Double tap animation speed</string>
     <string name="pref_show_page_number">Show page number</string>
     <string name="pref_vertical_navigator">Use vertical chapter navigator in</string>

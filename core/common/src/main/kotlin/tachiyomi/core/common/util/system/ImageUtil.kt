@@ -31,8 +31,12 @@ import java.util.Locale
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.roundToInt
 
 object ImageUtil {
+
+    /** Period of the halftone dots in the automatic background. */
+    private const val HALFTONE_DOT_PITCH_DP = 3f
 
     fun isImage(name: String?, openStream: (() -> InputStream)? = null): Boolean {
         if (name == null) return false
@@ -187,8 +191,10 @@ object ImageUtil {
 
     /**
      * Algorithm for determining what background to accompany a comic/manga page
+     *
+     * @param halftone draw transitions as halftone dots instead of a gradient, which bands on e-ink.
      */
-    fun chooseBackground(context: Context, imageStream: InputStream): Drawable {
+    fun chooseBackground(context: Context, imageStream: InputStream, halftone: Boolean = false): Drawable {
         val image = try {
             ImageDecoder.open(imageStream).use { it.decodeNext() to it.isHdr }.let { (res, hdr) ->
                 res.use {
@@ -206,13 +212,13 @@ object ImageUtil {
 
         if (image == null) return Color.WHITE.toDrawable()
         return try {
-            chooseBackground(context, image)
+            chooseBackground(context, image, halftone)
         } finally {
             image.recycle()
         }
     }
 
-    private fun chooseBackground(context: Context, image: Bitmap): Drawable {
+    private fun chooseBackground(context: Context, image: Bitmap, halftone: Boolean): Drawable {
         val whiteColor = Color.WHITE
         if (image.width < 50 || image.height < 50) {
             return whiteColor.toDrawable()
@@ -385,12 +391,12 @@ object ImageUtil {
         val topOffsetCornersIsDark = image[leftOffsetX, top].isDark() && image[rightOffsetX, top].isDark()
         val botOffsetCornersIsDark = image[leftOffsetX, bot].isDark() && image[rightOffsetX, bot].isDark()
 
-        val gradient = when {
+        val (startColor, endColor) = when {
             darkBG && botCornersIsWhite -> {
-                intArrayOf(blackColor, blackColor, whiteColor, whiteColor)
+                blackColor to whiteColor
             }
             darkBG && topCornersIsWhite -> {
-                intArrayOf(whiteColor, whiteColor, blackColor, blackColor)
+                whiteColor to blackColor
             }
             darkBG -> {
                 return blackColor.toDrawable()
@@ -401,7 +407,7 @@ object ImageUtil {
                         topOffsetCornersIsDark &&
                         (topMidIsDark || overallBlackPixels > 9)
                     ) -> {
-                intArrayOf(blackColor, blackColor, whiteColor, whiteColor)
+                blackColor to whiteColor
             }
             bottomIsBlackStreak ||
                 (
@@ -409,16 +415,23 @@ object ImageUtil {
                         botOffsetCornersIsDark &&
                         (bottomCenterPixel.isDark() || overallBlackPixels > 9)
                     ) -> {
-                intArrayOf(whiteColor, whiteColor, blackColor, blackColor)
+                whiteColor to blackColor
             }
             else -> {
                 return whiteColor.toDrawable()
             }
         }
 
-        return GradientDrawable(
-            GradientDrawable.Orientation.TOP_BOTTOM,
-            gradient,
+        if (!halftone) {
+            return GradientDrawable(
+                GradientDrawable.Orientation.TOP_BOTTOM,
+                intArrayOf(startColor, startColor, endColor, endColor),
+            )
+        }
+        return HalftoneGradientDrawable(
+            startColor = startColor,
+            endColor = endColor,
+            dotPitch = (HALFTONE_DOT_PITCH_DP * context.resources.displayMetrics.density).roundToInt(),
         )
     }
 

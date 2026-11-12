@@ -37,6 +37,8 @@ class ReaderPreferences(
 
     val flashColor: Preference<FlashColor> = preferenceStore.getEnum("pref_reader_flash_mode", FlashColor.BLACK)
 
+    val halftoneBackground: Preference<Boolean> = preferenceStore.getBoolean("pref_reader_halftone_background", false)
+
     val doubleTapAnimSpeed: Preference<Int> = preferenceStore.getInt("pref_double_tap_anim_speed", 500)
 
     val showPageNumber: Preference<Boolean> = preferenceStore.getBoolean("pref_show_page_number_key", true)
