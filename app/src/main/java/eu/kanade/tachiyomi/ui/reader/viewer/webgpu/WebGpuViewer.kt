@@ -3,6 +3,7 @@ package eu.kanade.tachiyomi.ui.reader.viewer.webgpu
 import android.content.Context
 import android.graphics.Rect
 import android.os.SystemClock
+import android.view.View
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import ca.mpreg.imagedecoder.ImageDecoder
@@ -1941,6 +1942,9 @@ open class WebGpuViewer(
     override fun moveForward() = if (isReversed) moveLeft() else moveRight()
 
     override fun moveBackward() = if (isReversed) moveRight() else moveLeft()
+
+    // Pages draw to their own surface, which the window's draws don't include
+    override suspend fun awaitPageDrawn(window: View) = delay(500.milliseconds)
 
     protected open fun moveRight() {
         viewerState.getPage(0)?.let { page ->

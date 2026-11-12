@@ -1,9 +1,11 @@
 package eu.kanade.presentation.reader
 
+import android.view.View
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
 import androidx.lifecycle.Lifecycle
@@ -47,9 +49,11 @@ class DisplayRefreshHost(readerPreferences: ReaderPreferences) {
 @Composable
 fun DisplayRefreshHost(
     hostState: DisplayRefreshHost,
+    awaitPageDrawn: suspend (window: View) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val flashInterval by hostState.flashIntervalPref.collectAsState()
+    val currentAwaitPageDrawn by rememberUpdatedState(awaitPageDrawn)
     val view = LocalView.current
     val lifecycle = LocalLifecycleOwner.current.lifecycle
 
@@ -59,7 +63,7 @@ fun DisplayRefreshHost(
             val hardware = DisplayRefresher.hardware?.takeIf { hostState.hardwareRefreshPref.get() }
             if (hardware != null) {
                 // The page change lands before the new page is fully on screen
-                delay(HARDWARE_REFRESH_DELAY)
+                currentAwaitPageDrawn(view.rootView)
                 if (!lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) return@collectLatest
                 if (hardware.refresh(view.rootView)) {
                     if (hostState.hardwareRefreshTwicePref.get()) {
@@ -81,8 +85,6 @@ fun DisplayRefreshHost(
     DisplayRefresher.hardware?.Overlay(modifier)
     hostState.flashRefresher.Overlay(modifier)
 }
-
-private val HARDWARE_REFRESH_DELAY = 500.milliseconds
 
 // Sent back to back, the two requests sometimes merge into one refresh
 private val SECOND_PASS_DELAY = 50.milliseconds

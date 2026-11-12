@@ -255,7 +255,10 @@ class ReaderActivity : BaseActivity() {
                 }
 
                 if (flashOnPageChange) {
-                    DisplayRefreshHost(hostState = displayRefreshHost)
+                    DisplayRefreshHost(
+                        hostState = displayRefreshHost,
+                        awaitPageDrawn = { viewer?.awaitPageDrawn(it) },
+                    )
                 }
 
                 ReaderNavigationOverlay(state = navigationOverlayState)
