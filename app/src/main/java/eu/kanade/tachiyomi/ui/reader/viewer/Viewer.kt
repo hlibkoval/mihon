@@ -1,6 +1,5 @@
 package eu.kanade.tachiyomi.ui.reader.viewer
 
-import android.os.SystemClock
 import android.view.View
 import android.view.ViewTreeObserver
 import androidx.compose.runtime.Composable
@@ -12,9 +11,8 @@ import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.model.ViewerChapters
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.android.awaitFrame
 import kotlinx.coroutines.withTimeoutOrNull
-import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 /**
@@ -63,18 +61,29 @@ interface Viewer {
     }
 }
 
-/** Gives up after [DRAWS_TIMEOUT], as an animated page never stops drawing. */
+/**
+ * Counts frames rather than time: while the main thread is busy no frame is drawn, and time alone would pass for
+ * quiet. Gives up after [DRAWS_TIMEOUT], as an animated page never stops drawing.
+ */
 private suspend fun View.awaitDrawsSettled() {
     val observer = viewTreeObserver
-    var lastDraw = SystemClock.uptimeMillis()
-    val listener = ViewTreeObserver.OnDrawListener { lastDraw = SystemClock.uptimeMillis() }
+    var draws = 0
+    val listener = ViewTreeObserver.OnDrawListener { draws++ }
     observer.addOnDrawListener(listener)
     try {
         withTimeoutOrNull(DRAWS_TIMEOUT) {
-            while (true) {
-                val quietFor = (SystemClock.uptimeMillis() - lastDraw).milliseconds
-                if (quietFor >= DRAWS_QUIET) break
-                delay(DRAWS_QUIET - quietFor)
+            // The page change comes before the frame that shows the new page
+            while (draws == 0) awaitFrame()
+            var seen = draws
+            var quietFrames = 0
+            while (quietFrames < QUIET_FRAMES) {
+                awaitFrame()
+                if (draws == seen) {
+                    quietFrames++
+                } else {
+                    seen = draws
+                    quietFrames = 0
+                }
             }
         }
     } finally {
@@ -82,8 +91,8 @@ private suspend fun View.awaitDrawsSettled() {
     }
 }
 
-// Long enough to span the gap while full resolution tiles decode after the first frame
-private val DRAWS_QUIET = 100.milliseconds
+// About 100 ms at 60 Hz, to span the gap while full resolution tiles decode after the first frame
+private const val QUIET_FRAMES = 6
 private val DRAWS_TIMEOUT = 2.seconds
 
 /**
